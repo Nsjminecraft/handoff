@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libudev-dev libdbus-1-dev pkg-config
+
+      - name: Build release
+        run: cargo build --release --workspace
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/release/handoffd dist/
+          cp target/release/handoff dist/
+          cp target/release/handoff-gui dist/ 2>/dev/null || true
+          tar -czf handoff-linux-x86_64.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-binaries
+          path: handoff-linux-x86_64.tar.gz
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Swift
+        run: |
+          # Install Swift dependencies
+          sudo apt-get update
+          sudo apt-get install -y curl binutils git gnupg2 \
+            libc6-dev libcurl4-openssl-dev libedit2 libgcc-9-dev \
+            libpython3.8 libsqlite3-0 libstdc++-9-dev libxml2-dev \
+            libz3-dev pkg-config tzdata unzip zlib1g-dev
+
+          # Download and install Swift
+          SWIFT_VERSION="6.0.3"
+          SWIFT_PLATFORM="ubuntu22.04"
+          SWIFT_ARCH="x86_64"
+
+          curl -fsSL "https://download.swift.org/swift-${SWIFT_VERSION}-release/ubuntu2204/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE-ubuntu22.04.tar.gz" -o /tmp/swift.tar.gz
+          sudo tar -xzf /tmp/swift.tar.gz -C /opt
+          echo "/opt/swift-${SWIFT_VERSION}-RELEASE-ubuntu22.04/usr/bin" >> $GITHUB_PATH
+
+      - name: Verify Swift
+        run: swift --version
+
+      - name: Install xtool
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/nicklockwood/XcodeBuild/main/install.sh | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install zip
+        run: sudo apt-get install -y zip
+
+      - name: Build IPA
+        working-directory: ios
+        run: |
+          ~/.local/bin/xtool dev build --ipa
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ios/*.ipa
+
+  build-relay:
+    name: Build Relay Server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build relay
+        working-directory: relay
+        run: |
+          go build -o handoff-relay
+          tar -czf handoff-relay-linux-x86_64.tar.gz handoff-relay
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: relay-binary
+          path: relay/handoff-relay-linux-x86_64.tar.gz
+
+  release:
+    name: Create Release
+    needs: [build-linux, build-ios, build-relay]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/linux-binaries/handoff-linux-x86_64.tar.gz
+            artifacts/ios-ipa/*.ipa
+            artifacts/relay-binary/handoff-relay-linux-x86_64.tar.gz
+            install.sh
+          generate_release_notes: true
+          draft: false
+          prerelease: false
