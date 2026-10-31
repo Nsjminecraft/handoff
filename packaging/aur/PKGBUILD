@@ -1,0 +1,75 @@
+# Maintainer: Your Name <your.email@example.com>
+pkgname=handoff
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Apple Continuity features for Linux and iOS"
+arch=('x86_64' 'aarch64')
+url="https://github.com/Nsjminecraft/handoff"
+license=('MIT')
+depends=(
+    'systemd-libs'
+    'dbus'
+    'libudev'
+)
+makedepends=(
+    'rust'
+    'cargo'
+    'git'
+)
+optdepends=(
+    'v4l2loopback-dkms: iPhone camera as webcam'
+    'wl-clipboard: Wayland clipboard support'
+    'bluez: BLE proximity detection'
+)
+source=("git+https://github.com/Nsjminecraft/handoff.git#tag=v${pkgver}")
+sha256sums=('SKIP')
+
+build() {
+    cd "$srcdir/$pkgname"
+    cargo build --release --workspace
+}
+
+package() {
+    cd "$srcdir/$pkgname"
+
+    # Install binaries
+    install -Dm755 target/release/handoffd "$pkgdir/usr/bin/handoffd"
+    install -Dm755 target/release/handoff "$pkgdir/usr/bin/handoff"
+    install -Dm755 target/release/handoff-gui "$pkgdir/usr/bin/handoff-gui"
+
+    # Install systemd service
+    install -Dm644 systemd/handoffd.service "$pkgdir/usr/lib/systemd/user/handoffd.service"
+
+    # Install default config
+    install -Dm644 /dev/stdin "$pkgdir/etc/handoff/config.toml" << 'EOF'
+[daemon]
+ws_port = 9877
+mdns_service = "_handoff._tcp.local."
+
+[clipboard]
+history_size = 100
+sync_enabled = true
+
+[proximity]
+enabled = true
+lock_distance = -70
+unlock_distance = -60
+
+[camera]
+enabled = false
+device_index = 0
+EOF
+
+    # Install license
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    # Install documentation
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}
+
+post_install() {
+    echo ">>> Handoff installed successfully"
+    echo ">>> Enable the daemon: systemctl --user enable handoffd"
+    echo ">>> Start the daemon: systemctl --user start handoffd"
+    echo ">>> Pair with iOS: handoff pair"
+}

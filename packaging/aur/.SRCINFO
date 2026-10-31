@@ -1,0 +1,21 @@
+pkgbase = handoff
+	pkgdesc = Apple Continuity features for Linux and iOS
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/Nsjminecraft/handoff
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	makedepends = rust
+	makedepends = cargo
+	makedepends = git
+	depends = systemd-libs
+	depends = dbus
+	depends = libudev
+	optdepends = v4l2loopback-dkms: iPhone camera as webcam
+	optdepends = wl-clipboard: Wayland clipboard support
+	optdepends = bluez: BLE proximity detection
+	source = git+https://github.com/Nsjminecraft/handoff.git#tag=v0.1.0
+	sha256sums = SKIP
+
+pkgname = handoff
