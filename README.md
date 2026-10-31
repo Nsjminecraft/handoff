@@ -100,6 +100,9 @@ systemctl --user start handoffd
 **On macOS (Xcode):**
 ```bash
 cd ios
+# Open in Xcode and configure signing
+open HandoffiOS.xcodeproj
+# Or build from command line
 xcodebuild -scheme HandoffiOS -destination 'generic/platform=iOS'
 ```
 
@@ -112,9 +115,17 @@ curl -fsSL https://github.com/nicklockwood/XcodeBuild/releases/latest/download/i
 cd ios
 xtool dev build --ipa
 
-# Install to device
-xtool install Handoff.ipa
+# Install to connected iOS device
+# Connect your iPhone via USB first
+xtool install HandoffiOS.ipa
 ```
+
+**iOS Device Setup:**
+1. Connect iPhone via USB
+2. Enable Developer Mode: Settings → Privacy & Security → Developer Mode
+3. Trust the development certificate: Settings → General → VPN & Device Management
+4. Run: `xtool install HandoffiOS.ipa` (Linux) or install via Xcode (macOS)
+5. Launch Handoff app on iPhone
 
 ## Usage
 
