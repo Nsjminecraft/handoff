@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Handoff
+Comment=Apple Continuity features for Linux
+Exec=handoff-gui
+Icon=handoff
+Terminal=false
+Type=Application
+Categories=Utility;System;
+Keywords=continuity;handoff;clipboard;sync;ios;apple;

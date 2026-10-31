@@ -109,6 +109,20 @@ install_binaries() {
     success "Binaries installed"
 }
 
+install_desktop_entry() {
+    info "Installing desktop entry..."
+
+    DESKTOP_DIR="$HOME/.local/share/applications"
+    mkdir -p "$DESKTOP_DIR"
+
+    if [ -f "$TEMP_DIR/handoff/gui/handoff-gui.desktop" ]; then
+        cp "$TEMP_DIR/handoff/gui/handoff-gui.desktop" "$DESKTOP_DIR/"
+        success "Desktop entry installed"
+    else
+        info "Desktop entry not found, skipping"
+    fi
+}
+
 install_systemd_service() {
     info "Installing systemd service..."
 
@@ -181,6 +195,7 @@ main() {
     check_deps
     download_release
     install_binaries
+    install_desktop_entry
     install_systemd_service
     create_config
 

@@ -37,6 +37,9 @@ package() {
     install -Dm755 target/release/handoff "$pkgdir/usr/bin/handoff"
     install -Dm755 target/release/handoff-gui "$pkgdir/usr/bin/handoff-gui"
 
+    # Install desktop entry
+    install -Dm644 gui/handoff-gui.desktop "$pkgdir/usr/share/applications/handoff-gui.desktop"
+
     # Install systemd service
     install -Dm644 systemd/handoffd.service "$pkgdir/usr/lib/systemd/user/handoffd.service"
 
