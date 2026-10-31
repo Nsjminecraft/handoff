@@ -1,0 +1,12 @@
+[package]
+name = "handoff-pam"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "pam_handoff"
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow.workspace = true

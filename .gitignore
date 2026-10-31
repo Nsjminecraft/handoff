@@ -1,0 +1,28 @@
+# Rust
+target/
+Cargo.lock
+
+# iOS/Swift
+ios/.build/
+ios/xtool/
+*.ipa
+*.app
+*.dSYM
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+
+# Logs
+*.log

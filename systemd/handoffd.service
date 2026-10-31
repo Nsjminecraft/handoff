@@ -1,0 +1,15 @@
+[Unit]
+Description=Handoff Continuity Daemon
+Documentation=https://github.com/yourusername/handoff
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/Projects/handoff/target/release/handoffd
+Restart=on-failure
+RestartSec=5
+Environment=RUST_LOG=handoffd=info
+
+[Install]
+WantedBy=default.target
