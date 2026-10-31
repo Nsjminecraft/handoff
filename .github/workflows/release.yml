@@ -45,38 +45,17 @@ jobs:
 
   build-ios:
     name: Build iOS IPA
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Swift
-        run: |
-          # Install Swift dependencies
-          sudo apt-get update
-          sudo apt-get install -y curl binutils git gnupg2 \
-            libc6-dev libcurl4-openssl-dev libedit2 libgcc-9-dev \
-            libpython3.8 libsqlite3-0 libstdc++-9-dev libxml2-dev \
-            libz3-dev pkg-config tzdata unzip zlib1g-dev
-
-          # Download and install Swift
-          SWIFT_VERSION="6.0.3"
-          SWIFT_PLATFORM="ubuntu22.04"
-          SWIFT_ARCH="x86_64"
-
-          curl -fsSL "https://download.swift.org/swift-${SWIFT_VERSION}-release/ubuntu2204/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE-ubuntu22.04.tar.gz" -o /tmp/swift.tar.gz
-          sudo tar -xzf /tmp/swift.tar.gz -C /opt
-          echo "/opt/swift-${SWIFT_VERSION}-RELEASE-ubuntu22.04/usr/bin" >> $GITHUB_PATH
-
-      - name: Verify Swift
-        run: swift --version
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.0.app/Contents/Developer
 
       - name: Install xtool
         run: |
           curl -fsSL https://raw.githubusercontent.com/nicklockwood/XcodeBuild/main/install.sh | bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Install zip
-        run: sudo apt-get install -y zip
 
       - name: Build IPA
         working-directory: ios
