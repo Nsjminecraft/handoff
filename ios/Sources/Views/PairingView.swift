@@ -190,6 +190,13 @@ class QRScannerUIView: UIView, @preconcurrency AVCaptureMetadataOutputObjectsDel
     }
 
     private func setupCamera() {
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            guard granted else { return }
+            self.startCaptureSession()
+        }
+    }
+
+    private func startCaptureSession() {
         guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
 
         guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else { return }

@@ -247,15 +247,17 @@ impl HandoffApp {
         );
 
         if let Some(ref qr_data) = self.pairing_qr {
+            content = content.push(Space::with_height(10));
             content = content.push(
-                scrollable(
-                    column![
-                        text("QR Code (scan with iOS):").size(14),
-                        text(qr_data).size(10),
-                    ]
-                    .spacing(5)
-                )
-                .height(Length::Fixed(200.0))
+                column![
+                    text("Scan with iOS Handoff app:").size(16),
+                    Space::with_height(5),
+                    text(qr_data)
+                        .font(iced::Font::MONOSPACE)
+                        .size(8),
+                ]
+                .spacing(5)
+                .padding(10)
             );
         }
 
