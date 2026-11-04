@@ -24,12 +24,19 @@ impl ClipboardManager {
 
         let handle = tokio::spawn(async move {
             let mut last_content = String::new();
+            let mut clipboard = match arboard::Clipboard::new() {
+                Ok(c) => c,
+                Err(e) => {
+                    warn!("Failed to initialize clipboard: {}", e);
+                    return;
+                }
+            };
 
             loop {
                 tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
 
                 // Read current clipboard
-                let content = match cli_clipboard::get_contents() {
+                let content = match clipboard.get_text() {
                     Ok(c) => c,
                     Err(_) => continue,
                 };

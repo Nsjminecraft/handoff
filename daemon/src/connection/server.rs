@@ -277,7 +277,11 @@ impl WebSocketServer {
             "clipboard.sync" => {
                 info!("Received clipboard sync");
                 if let Some(data) = msg.get("payload").and_then(|p| p.get("data")).and_then(|v| v.as_str()) {
-                    if let Err(e) = cli_clipboard::set_contents(data.to_string()) {
+                    let result: Result<(), anyhow::Error> = arboard::Clipboard::new()
+                        .map_err(|e| anyhow::anyhow!("{}", e))
+                        .and_then(|mut c| c.set_text(data.to_string()).map_err(|e| anyhow::anyhow!("{}", e)));
+
+                    if let Err(e) = result {
                         warn!("Failed to set clipboard: {}", e);
                     } else {
                         debug!("Clipboard updated from peer ({} chars)", data.len());

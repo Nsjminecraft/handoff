@@ -23,7 +23,7 @@ clap = { version = "4", features = ["derive"] }
 toml = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-cli-clipboard = "0.4"
+arboard = "3.7"
 uuid = { version = "1", features = ["v4"] }
 base64 = "0.22"
 thiserror = "1"

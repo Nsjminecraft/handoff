@@ -16,5 +16,5 @@ clap.workspace = true
 anyhow.workspace = true
 uuid.workspace = true
 chrono.workspace = true
-cli-clipboard.workspace = true
+arboard.workspace = true
 dirs = "5"

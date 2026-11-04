@@ -42,6 +42,14 @@ impl MdnsDiscovery {
     async fn browse_loop(pool: Arc<ConnectionPool>, local_port: u16) {
         use crate::connection::client;
 
+        // Shared channel for all incoming messages - one task, not one per peer
+        let (incoming_tx, mut incoming_rx) = tokio::sync::mpsc::channel::<crate::connection::client::IncomingMessage>(64);
+        tokio::spawn(async move {
+            while let Some(msg) = incoming_rx.recv().await {
+                debug!("Incoming from {}: {:?}", msg.peer_id, msg.message);
+            }
+        });
+
         loop {
             // Run avahi-browse in resolve mode to get host/port for each service
             let output = Command::new("avahi-browse")
@@ -96,15 +104,7 @@ impl MdnsDiscovery {
                         let noise = pool.noise_context().clone();
                         let pool = pool.clone();
 
-                        // We need an incoming message handler — for now just log
-                        let (_incoming_tx, mut incoming_rx) = tokio::sync::mpsc::channel::<crate::connection::client::IncomingMessage>(64);
-                        tokio::spawn(async move {
-                            while let Some(msg) = incoming_rx.recv().await {
-                                debug!("Incoming from {}: {:?}", msg.peer_id, msg.message);
-                            }
-                        });
-
-                        match client::connect_to_peer(&addr, port, noise, peer_info, _incoming_tx).await {
+                        match client::connect_to_peer(&addr, port, noise, peer_info, incoming_tx.clone()).await {
                             Ok(conn) => {
                                 pool.add_peer_connection(conn).await;
                                 info!("Connected to peer at {}:{}", addr, port);

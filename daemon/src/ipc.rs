@@ -170,12 +170,15 @@ impl IpcServer {
                 IpcResponse::Devices { devices }
             }
             IpcRequest::ClipboardGet => {
-                let text = cli_clipboard::get_contents().ok();
+                let text = arboard::Clipboard::new()
+                    .ok()
+                    .and_then(|mut c| c.get_text().ok());
                 IpcResponse::Clipboard { text }
             }
             IpcRequest::ClipboardSet { text } => {
-                let set_result: Result<(), String> = cli_clipboard::set_contents(text.clone())
-                    .map_err(|e| e.to_string());
+                let set_result: Result<(), String> = arboard::Clipboard::new()
+                    .map_err(|e| e.to_string())
+                    .and_then(|mut c| c.set_text(text.clone()).map_err(|e| e.to_string()));
                 match set_result {
                     Ok(_) => {
                         // Broadcast to peers
